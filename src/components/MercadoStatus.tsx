@@ -6,7 +6,7 @@ export default async function MercadoStatus() {
   let status = { status: "alta", mensagem: "Mercado operando normalmente", crash: false };
 
   try {
-    const url = process.env.NEXT_PUBLIC_MERCADO_STATUS_URL ?? "https://on-fire-academy.vercel.app/api/status-mercado";
+    const url = process.env.NEXT_PUBLIC_MERCADO_STATUS_URL ?? "https://web-on-fire.vercel.app/api/status-mercado";
     const res = await fetch(url); // BUG: sem cache: "no-store"
     status = await res.json();
   } catch {
