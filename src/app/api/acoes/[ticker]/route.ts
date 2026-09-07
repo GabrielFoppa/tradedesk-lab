@@ -1,30 +1,39 @@
 import { NextResponse } from "next/server";
 import { ACOES_MOCK } from "@/lib/mocks";
 
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ ticker: string }> }
-) {
-  const { ticker } = await params;
+interface RouteParams {
+  params: Promise<{ ticker: string }>;
+}
 
+export async function GET(request: Request, { params }: RouteParams) {
   try {
-    const res = await fetch(`https://brapi.dev/api/quote/${ticker}?fundamental=false`, {
-      next: { revalidate: 30 },
-    });
-    if (!res.ok) throw new Error("brapi offline");
-    const data = await res.json();
+    const { ticker } = await params;
 
-    // Bug B9: quando ticker não existe na brapi, results é array vazio
-    // mas retornamos {} com status 200 em vez de 404
-    if (!data.results || data.results.length === 0) {
-      return NextResponse.json({}); // Bug B9: deveria ser status 404
+    if (!ticker) {
+      return NextResponse.json(
+        { error: "Ticker não fornecido." },
+        { status: 400 }
+      );
     }
-    return NextResponse.json(data.results[0]); // retorna raw brapi
-  } catch {
-    const acao = ACOES_MOCK.find(a => a.ticker === ticker.toUpperCase());
+
+    const tickerUpper = ticker.toUpperCase();
+    const acao = ACOES_MOCK.find((a: any) => {
+      const simbolo = a?.ticker || a?.symbol || "";
+      return String(simbolo).toUpperCase() === tickerUpper;
+    });
+
     if (!acao) {
-      return NextResponse.json({}); // Bug B9: deveria ser NextResponse.json({ error: "..." }, { status: 404 })
+      return NextResponse.json(
+        { error: `Ação com ticker ${tickerUpper} não encontrada.` },
+        { status: 404 }
+      );
     }
-    return NextResponse.json(acao);
+
+    return NextResponse.json(acao, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Erro interno ao processar a requisição da ação." },
+      { status: 500 }
+    );
   }
 }
