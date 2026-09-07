@@ -1,31 +1,69 @@
 import { NextResponse } from "next/server";
-import { ACOES_MOCK, ORDENS_MOCK } from "@/lib/mocks";
-import type { Ordem } from "@/types/ordem";
+import { ORDENS_MOCK } from "@/lib/mocks";
 
-// validacao de quantidade minima? isso e front-end fazer nao eu
 export async function GET() {
-  return NextResponse.json(ORDENS_MOCK);
+  try {
+    return NextResponse.json(ORDENS_MOCK, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Erro ao buscar a lista de ordens." },
+      { status: 500 }
+    );
+  }
 }
 
-export async function POST(req: Request) {
-  const body = await req.json();
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { ticker, quantidade, preco, tipo } = body || {};
 
-  // Bug B10: sem validação de cota mínima (mínimo deveria ser 100 ações)
-  // Bug B10: aceita quantidade 0 ou negativa
+    // Validacao defensiva do corpo da requisicao
+    if (!ticker || typeof ticker !== "string") {
+      return NextResponse.json(
+        { error: "Ticker inválido ou não fornecido." },
+        { status: 400 }
+      );
+    }
 
-  const ordem: Ordem = {
-    id: crypto.randomUUID(),
-    ticker: body.ticker,
-    quantidade: body.quantidade,
-    preco: body.preco,
-    total: body.total,
-    tipo: "compra",
-    timestamp: new Date().toISOString(),
-  };
+    const qtdNumerica = Number(quantidade);
+    if (isNaN(qtdNumerica) || qtdNumerica <= 0) {
+      return NextResponse.json(
+        { error: "A quantidade deve ser um número maior que zero." },
+        { status: 400 }
+      );
+    }
 
-  // Bug B12: push na array ERRADA (ACOES_MOCK em vez de ORDENS_MOCK)
-  // Após 3 ordens, /api/acoes retorna ações misturadas com ordens
-  ACOES_MOCK.push(ordem as any); // Bug B12: deveria ser ORDENS_MOCK.push(ordem)
+    const precoNumerico = Number(preco);
+    if (isNaN(precoNumerico) || precoNumerico <= 0) {
+      return NextResponse.json(
+        { error: "O preço deve ser um valor numérico válido maior que zero." },
+        { status: 400 }
+      );
+    }
 
-  return NextResponse.json(ordem, { status: 201 });
+    const novaOrdem = {
+      id: `ORD-${Date.now()}`,
+      ticker: ticker.toUpperCase(),
+      quantidade: qtdNumerica,
+      preco: precoNumerico,
+      total: qtdNumerica * precoNumerico,
+      tipo: tipo || "compra",
+      timestamp: new Date().toISOString(),
+    };
+
+    // Adiciona ao mock local para simulacao
+    if (Array.isArray(ORDENS_MOCK)) {
+      ORDENS_MOCK.push(novaOrdem as any);
+    }
+
+    return NextResponse.json(
+      { message: "Ordem criada com sucesso!", ordem: novaOrdem },
+      { status: 201 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Falha ao processar a criação da ordem." },
+      { status: 500 }
+    );
+  }
 }
