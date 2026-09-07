@@ -1,15 +1,50 @@
 import Link from "next/link";
+import { MercadoStatus } from "@/components/MercadoStatus";
 
-export default function Header() {
+export function Header() {
   return (
-    <header style={{ background: "#111", borderBottom: "1px solid #222", padding: "1rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <Link href="/" style={{ color: "#f59e0b", fontWeight: 700, fontSize: "1.25rem", textDecoration: "none", letterSpacing: "0.1em" }}>
-        📈 TRADEDESK
-      </Link>
-      <nav style={{ display: "flex", gap: "2rem" }}>
-        <Link href="/acoes" style={{ color: "#e5e5e5", textDecoration: "none", fontSize: "0.9rem" }}>Ações</Link>
-        <Link href="/carteira" style={{ color: "#e5e5e5", textDecoration: "none", fontSize: "0.9rem" }}>Carteira</Link>
-      </nav>
+    <header
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justify: "space-between",
+        padding: "1rem 2rem",
+        borderBottom: "1px solid #2a2a2a",
+        background: "#0a0a0a",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
+        <Link
+          href="/"
+          style={{
+            fontSize: "1.25rem",
+            fontWeight: 700,
+            color: "#f59e0b",
+            textDecoration: "none",
+          }}
+        >
+          TradeDesk Lab
+        </Link>
+
+        <nav style={{ display: "flex", gap: "1rem" }}>
+          <Link
+            href="/"
+            style={{ color: "#e5e5e5", textDecoration: "none", fontSize: "0.9rem" }}
+          >
+            Início
+          </Link>
+          <Link
+            href="/carteira"
+            style={{ color: "#e5e5e5", textDecoration: "none", fontSize: "0.9rem" }}
+          >
+            Carteira
+          </Link>
+        </nav>
+      </div>
+
+      <MercadoStatus />
     </header>
   );
 }
+
+export default Header;
