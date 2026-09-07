@@ -1,33 +1,50 @@
-// Server Component — busca status do mercado em URL externa
-// BUG CACHE (Surpresa): sem opção de cache → Next.js cacheia como estático
-// Fix: adicionar { cache: "no-store" } ou { next: { revalidate: 30 } }
+"use client";
 
-export default async function MercadoStatus() {
-  let status = { status: "alta", mensagem: "Mercado operando normalmente", crash: false };
+import { useState, useEffect } from "react";
 
-  try {
-    const url = process.env.NEXT_PUBLIC_MERCADO_STATUS_URL ?? "https://web-on-fire.vercel.app/api/status-mercado";
-    const res = await fetch(url); // BUG: sem cache: "no-store"
-    status = await res.json();
-  } catch {
-    // silencia erro de rede
-  }
+export function MercadoStatus() {
+  const [aberto, setAberto] = useState<boolean | null>(null);
 
-  const isCrash = status.status === "CRASH" || status.crash === true;
+  useEffect(() => {
+    // Lógica executada exclusivamente no cliente/navegador
+    const agora = new Date();
+    const hora = agora.getHours();
+    const diaDaSemana = agora.getDay(); // 0 = Domingo, 6 = Sábado
+
+    // Considera mercado aberto entre 10h e 17h em dias úteis (Seg-Sex)
+    const eDiaUtil = diaDaSemana >= 1 && diaDaSemana <= 5;
+    const emHorario = hora >= 10 && hora < 17;
+
+    setAberto(eDiaUtil && emHorario);
+  }, []);
 
   return (
-    <div style={{
-      padding: "0.75rem 1.5rem",
-      background: isCrash ? "#1a0000" : "#001a00",
-      borderBottom: `2px solid ${isCrash ? "#ef4444" : "#22c55e"}`,
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-    }}>
-      <span style={{ color: isCrash ? "#ef4444" : "#22c55e", fontWeight: 700 }}>
-        {isCrash ? "🔴 CRASH NO MERCADO" : "🟢 MERCADO ABERTO"}
-      </span>
-      <span style={{ color: "#888", fontSize: "0.8rem" }}>{status.mensagem}</span>
+    <div 
+      className="card-terminal" 
+      style={{ 
+        padding: "0.75rem 1rem", 
+        border: "1px solid #2a2a2a", 
+        borderRadius: "6px", 
+        background: "#0a0a0a",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.5rem"
+      }}
+    >
+      <span style={{ fontSize: "0.85rem", color: "#888" }}>Status do Mercado:</span>
+      {aberto === null ? (
+        <span style={{ fontSize: "0.85rem", color: "#666" }}>Verificando...</span>
+      ) : aberto ? (
+        <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#22c55e" }}>
+          ● ABERTO
+        </span>
+      ) : (
+        <span style={{ fontSize: "0.85rem", fontWeight 700, color: "#ef4444" }}>
+          ● FECHADO
+        </span>
+      )}
     </div>
   );
 }
+
+export default MercadoStatus;
