@@ -39,7 +39,7 @@ export function MercadoStatus() {
           ● ABERTO
         </span>
       ) : (
-        <span style={{ fontSize: "0.85rem", fontWeight 700, color: "#ef4444" }}>
+        <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#ef4444" }}>
           ● FECHADO
         </span>
       )}
