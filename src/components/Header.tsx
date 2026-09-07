@@ -7,7 +7,7 @@ export function Header() {
       style={{
         display: "flex",
         alignItems: "center",
-        justify: "space-between",
+        justifyContent: "space-between", // Propriedade CSS em camelCase corrigida
         padding: "1rem 2rem",
         borderBottom: "1px solid #2a2a2a",
         background: "#0a0a0a",
